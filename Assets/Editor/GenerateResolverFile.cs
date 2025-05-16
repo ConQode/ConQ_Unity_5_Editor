@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System;
@@ -30,24 +30,25 @@ public class GenerateResolverFile : EditorWindow
         {
             GameObject[] selectedObjects = Selection.gameObjects;
             if (selectedObjects.Length > 0)
+            {
+                // Sort selected objects by name
+                Array.Sort(selectedObjects, (x, y) => x.name.CompareTo(y.name));
+
+                int currentID = startValue;
+                string filePath = EditorUtility.SaveFilePanel("Save Object List", "", "ObjectList.txt", "txt");
+                if (!string.IsNullOrEmpty(filePath))
                 {
-                    // Sort selected objects by name
-                    Array.Sort(selectedObjects, (x, y) => x.name.CompareTo(y.name));
-                
-                    int currentID = startValue;
-                    string filePath = EditorUtility.SaveFilePanel("Save Object List", "", "ObjectList.txt", "txt");
-                    if (!string.IsNullOrEmpty(filePath))
+                    using (StreamWriter writer = new StreamWriter(filePath))
                     {
-                        using (StreamWriter writer = new StreamWriter(filePath))
+                        foreach (GameObject gameObject in selectedObjects)
                         {
-                            foreach (GameObject gameObject in selectedObjects)
-                            {
-                                writer.WriteLine(string.Format("<{0}><{1}><{2}><><{3}><{4}><><false><false><><false><><true>",
-                                    currentID++, categoryValue, prefix + " " + gameObject.name, unity3dFilePath, gameObject.name));
-                            }
+                            string objectName = string.IsNullOrEmpty(prefix) ? gameObject.name : prefix + " " + gameObject.name;
+                            writer.WriteLine(string.Format("<{0}><{1}><{2}><><{3}><{4}><><false><false><><false><><true>",
+                                currentID++, categoryValue, objectName, unity3dFilePath, gameObject.name));
                         }
                     }
                 }
+            }
             else
             {
                 EditorUtility.DisplayDialog("No objects selected", "Please select one or more objects to generate the resolver list.", "OK");
